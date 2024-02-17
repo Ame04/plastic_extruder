@@ -1,5 +1,6 @@
 {
     "board": "arduino:avr:uno",
     "programmer": "avrispmkii",
-    "sketch": "code/src/main/main.ino"
+    "sketch": "code/src/plastic_extruder/plastic_extruder.ino",
+    "port": "/dev/ttyACM0"
 }
