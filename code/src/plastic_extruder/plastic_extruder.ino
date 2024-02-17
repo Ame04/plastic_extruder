@@ -22,6 +22,8 @@
 #define STEPPER_PIN_2 10
 #define STEPPER_PIN_3 11
 #define STEPPER_PIN_4 12
+#define STEPPER_MAX_SPEED 60
+#define STEPPER_RAMP_DURATION 1000
 
 /* DC motor defines */
 #define DC_PIN_FW 5
@@ -37,7 +39,7 @@
  * Type definitions
 ********************************************************************************/
 /* DC type definitions */
-typedef enum dc_rotation_way {DC_FORWARD, DC_BACKWARD};
+typedef enum rotation_way {FWD, BWD};
 
 /*******************************************************************************
  * Global variables
@@ -45,16 +47,21 @@ typedef enum dc_rotation_way {DC_FORWARD, DC_BACKWARD};
 ContinuousStepper<FourWireStepper, TimerOneTicker> winding_stepper;
 LiquidCrystal_I2C lcd(LCD_ADDR, LCD_COLLUMN, LCD_ROW);
 rampUnsignedInt dc_ramp;
+rampInt stepper_ramp;
 
 /*******************************************************************************
  * Function signatures
 ********************************************************************************/
 /* Stepper functions */
+void stepper_init(void);
+bool stepper_set_target_speed(uint8_t speed);
+void stepper_set_target_rotation_way(rotation_way rotation_way);
+void stepper_update_current_speed(void);
 
 /* DC motor functions */
 void dc_init(void);
 bool dc_set_target_speed(uint8_t speed);
-void dc_set_target_rotation_way(dc_rotation_way rotation_way);
+void dc_set_target_rotation_way(rotation_way rotation_way);
 void dc_update_current_speed(void);
 
 /* LCD functions */

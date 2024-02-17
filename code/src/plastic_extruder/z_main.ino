@@ -7,8 +7,8 @@
 */
 
 void setup(void) {
-    winding_stepper.begin(STEPPER_PIN_1, STEPPER_PIN_2, STEPPER_PIN_3, STEPPER_PIN_4);
-    winding_stepper.spin(50);
+    stepper_init();
+    stepper_set_target_speed(20);
 
     dc_init();
     dc_set_target_speed(20);
@@ -39,8 +39,9 @@ void loop(void){
         lcd.print(time);
         if (speed){
             speed = false;
-            winding_stepper.spin(20);
-            dc_set_target_rotation_way(DC_BACKWARD);
+            stepper_set_target_rotation_way(BWD);
+            stepper_set_target_speed(20);
+            dc_set_target_rotation_way(BWD);
             dc_set_target_speed(20);
             Serial.println(F("Speed changed to = 20"));
             lcd.setCursor(0,1);
@@ -49,9 +50,10 @@ void loop(void){
         }
         else {
             speed = true;
-            winding_stepper.spin(50);
+            stepper_set_target_speed(50);
+            stepper_set_target_rotation_way(FWD);
             dc_set_target_speed(50);
-            dc_set_target_rotation_way(DC_FORWARD);
+            dc_set_target_rotation_way(FWD);
             Serial.println(F(" Speed changed to = 50"));
             lcd.setCursor(0,1);
             lcd.print("PaP Speed = 50");
@@ -59,4 +61,5 @@ void loop(void){
         previous_time = time;
     }
     dc_update_current_speed();
+    stepper_update_current_speed();
 }

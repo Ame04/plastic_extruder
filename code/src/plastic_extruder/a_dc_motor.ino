@@ -1,8 +1,8 @@
 /**
  * @file a_dc_motor.ino
- * @brief Main of the project
+ * @brief Function to handle the DC motor of the project
  * @author CAMUS Armand
- * @date 04/02/2024
+ * @date 17/02/2024
  * @version A1
 */
 
@@ -10,8 +10,8 @@
  * Global variables of module
 ********************************************************************************/
 
-dc_rotation_way dc_current_rotation_way;
-dc_rotation_way dc_target_rotation_way;
+rotation_way dc_current_rotation_way;
+rotation_way dc_target_rotation_way;
 uint8_t dc_current_speed;
 uint8_t dc_target_speed;
 
@@ -22,10 +22,9 @@ uint8_t dc_target_speed;
  * Initialyse DC motor pins and way of rotation
 */
 void dc_init(void){
-    pinMode(DC_PIN_FW, OUTPUT);
-    pinMode(DC_PIN_BW, OUTPUT);
-    dc_current_rotation_way = DC_FORWARD;
-    dc_target_rotation_way = DC_FORWARD;
+    winding_stepper.begin(STEPPER_PIN_1, STEPPER_PIN_2, STEPPER_PIN_3, STEPPER_PIN_4);
+    dc_current_rotation_way = FWD;
+    dc_target_rotation_way = FWD;
     dc_current_speed = 0;
     dc_target_speed = 0;
 }
@@ -52,10 +51,10 @@ bool dc_set_target_speed(uint8_t speed){
 }
 
 /**
- * Set the rotation way
+ * Set the DC motor rotation way
  * @param rotation_way the wanted rotation way
 */
-void dc_set_target_rotation_way(dc_rotation_way rotation_way){
+void dc_set_target_rotation_way(rotation_way rotation_way){
     if (rotation_way != dc_current_rotation_way){
         dc_ramp.go(0, DC_RAMP_DURATION);
     }
@@ -81,11 +80,11 @@ void dc_update_current_speed(void){
     }
     // Map the speed on 0-255 backward because of hardware implementation
     mapped_speed = map(ramp_speed, 0, 100, 255, 0);
-    if (dc_current_rotation_way == DC_FORWARD) {
+    if (dc_current_rotation_way == FWD) {
         digitalWrite(DC_PIN_BW, HIGH);
         analogWrite(DC_PIN_FW, mapped_speed);
     }
-    else if (dc_current_rotation_way == DC_BACKWARD){
+    else if (dc_current_rotation_way == BWD){
         digitalWrite(DC_PIN_FW, HIGH);
         analogWrite(DC_PIN_BW, mapped_speed);
     }
