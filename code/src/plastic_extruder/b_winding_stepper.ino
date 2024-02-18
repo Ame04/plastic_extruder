@@ -37,7 +37,7 @@ void stepper_init(void){
 */
 bool stepper_set_target_speed(uint8_t speed){
     bool error = false;
-    uint8_t direction = 1;
+    int8_t direction = 1;
 
     if (speed > 100){
         speed = 0;
@@ -46,11 +46,9 @@ bool stepper_set_target_speed(uint8_t speed){
     stepper_target_speed = speed;
     // Set the ramp for smooth transitions only if no change in direction is ongoing
     if (stepper_target_rotation_way == BWD){
-        stepper_ramp.go(-speed, STEPPER_RAMP_DURATION, LINEAR, ONCEFORWARD);
+        direction = -1;
     }
-    else {
-        stepper_ramp.go(speed, STEPPER_RAMP_DURATION, LINEAR, ONCEFORWARD);
-    }
+    stepper_ramp.go(direction * stepper_target_speed, STEPPER_RAMP_DURATION, LINEAR, ONCEFORWARD);
 
     return error;
 }
@@ -60,14 +58,12 @@ bool stepper_set_target_speed(uint8_t speed){
  * @param rotation_way the wanted rotation way
 */
 void stepper_set_target_rotation_way(rotation_way rotation_way){
-    uint8_t direction = 1;
+    int8_t direction = 1;
     if (rotation_way != stepper_target_rotation_way){
         if (rotation_way == BWD){
-            stepper_ramp.go(-stepper_target_speed, STEPPER_RAMP_DURATION, LINEAR, ONCEFORWARD);
+            direction = -1;
         }
-        else {
-            stepper_ramp.go(stepper_target_speed, STEPPER_RAMP_DURATION, LINEAR, ONCEFORWARD);
-        }
+        stepper_ramp.go(direction * stepper_target_speed, STEPPER_RAMP_DURATION, LINEAR, ONCEFORWARD);
     }
     stepper_target_rotation_way = rotation_way;
 }
@@ -83,8 +79,6 @@ void stepper_update_current_speed(void){
     // Update the ramp and get the new value
     stepper_ramp.update();
     ramp_speed = stepper_ramp.getValue();
-    Serial.print("Stepper ramp value = ");
-    Serial.println(ramp_speed);
 
     // Map the speed on 0-255 backward because of hardware implementation
     mapped_speed = map(ramp_speed, -100, 100, -STEPPER_MAX_SPEED, STEPPER_MAX_SPEED);
