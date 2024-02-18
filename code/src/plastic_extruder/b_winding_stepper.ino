@@ -22,8 +22,8 @@ uint8_t stepper_target_speed;
  * Initialyse stepper pins and way of rotation
 */
 void stepper_init(void){
-    pinMode(DC_PIN_FW, OUTPUT);
-    pinMode(DC_PIN_BW, OUTPUT);
+    winding_stepper.begin(STEPPER_PIN_1, STEPPER_PIN_2, STEPPER_PIN_3, STEPPER_PIN_4);
+    winding_stepper.setAcceleration(1000);
     stepper_current_rotation_way = FWD;
     stepper_target_rotation_way = FWD;
     stepper_current_speed = 0;
@@ -46,10 +46,11 @@ bool stepper_set_target_speed(uint8_t speed){
     stepper_target_speed = speed;
     // Set the ramp for smooth transitions only if no change in direction is ongoing
     if (stepper_target_rotation_way == BWD){
-        direction = -1;
+        stepper_ramp.go(-speed, STEPPER_RAMP_DURATION, LINEAR, ONCEFORWARD);
     }
-
-    stepper_ramp.go(direction * speed, STEPPER_RAMP_DURATION);
+    else {
+        stepper_ramp.go(speed, STEPPER_RAMP_DURATION, LINEAR, ONCEFORWARD);
+    }
 
     return error;
 }
@@ -60,11 +61,13 @@ bool stepper_set_target_speed(uint8_t speed){
 */
 void stepper_set_target_rotation_way(rotation_way rotation_way){
     uint8_t direction = 1;
-    if (rotation_way != stepper_current_rotation_way){
+    if (rotation_way != stepper_target_rotation_way){
         if (rotation_way == BWD){
-            direction = -1;
+            stepper_ramp.go(-stepper_target_speed, STEPPER_RAMP_DURATION, LINEAR, ONCEFORWARD);
         }
-        stepper_ramp.go(direction * stepper_target_speed, STEPPER_RAMP_DURATION);
+        else {
+            stepper_ramp.go(stepper_target_speed, STEPPER_RAMP_DURATION, LINEAR, ONCEFORWARD);
+        }
     }
     stepper_target_rotation_way = rotation_way;
 }
@@ -74,15 +77,18 @@ void stepper_set_target_rotation_way(rotation_way rotation_way){
 */
 void stepper_update_current_speed(void){
     bool error = false;
-    uint8_t mapped_speed;
-    uint8_t ramp_speed;
+    int8_t mapped_speed;
+    int8_t ramp_speed;
 
     // Update the ramp and get the new value
     stepper_ramp.update();
     ramp_speed = stepper_ramp.getValue();
+    Serial.print("Stepper ramp value = ");
+    Serial.println(ramp_speed);
 
     // Map the speed on 0-255 backward because of hardware implementation
     mapped_speed = map(ramp_speed, -100, 100, -STEPPER_MAX_SPEED, STEPPER_MAX_SPEED);
     stepper_current_speed = ramp_speed;
     winding_stepper.spin(mapped_speed);
+    winding_stepper.loop();
 }

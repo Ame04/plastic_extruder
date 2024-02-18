@@ -20,7 +20,7 @@ void setup(void) {
     lcd.setCursor(0,1);
     lcd.print("PaP Speed = 50");
 
-    Serial.begin(9600);
+    Serial.begin(SERIAL_BAUDRATE);
     Serial.println(F("System initialised, speed = 40"));
 }
 
@@ -60,6 +60,7 @@ void loop(void){
         }
         previous_time = time;
     }
+    // To update the actual speed as often as possible.
     dc_update_current_speed();
     stepper_update_current_speed();
 }

@@ -22,7 +22,8 @@ uint8_t dc_target_speed;
  * Initialyse DC motor pins and way of rotation
 */
 void dc_init(void){
-    winding_stepper.begin(STEPPER_PIN_1, STEPPER_PIN_2, STEPPER_PIN_3, STEPPER_PIN_4);
+    pinMode(DC_PIN_FW, OUTPUT);
+    pinMode(DC_PIN_BW, OUTPUT);
     dc_current_rotation_way = FWD;
     dc_target_rotation_way = FWD;
     dc_current_speed = 0;

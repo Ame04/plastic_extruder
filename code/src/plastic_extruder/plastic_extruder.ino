@@ -12,11 +12,13 @@
 #include <Wire.h>
 #include <Ramp.h>
 #include <ContinuousStepper.h>
-#include <ContinuousStepper/Tickers/TimerOne.hpp>
 #include <LiquidCrystal_I2C.h>
 /*******************************************************************************
  * Defines
 ********************************************************************************/
+/* Debug defines */
+#define SERIAL_BAUDRATE 115200
+
 /* Stepper defines */
 #define STEPPER_PIN_1 9
 #define STEPPER_PIN_2 10
@@ -44,7 +46,7 @@ typedef enum rotation_way {FWD, BWD};
 /*******************************************************************************
  * Global variables
 ********************************************************************************/
-ContinuousStepper<FourWireStepper, TimerOneTicker> winding_stepper;
+ContinuousStepper<FourWireStepper> winding_stepper;
 LiquidCrystal_I2C lcd(LCD_ADDR, LCD_COLLUMN, LCD_ROW);
 rampUnsignedInt dc_ramp;
 rampInt stepper_ramp;
