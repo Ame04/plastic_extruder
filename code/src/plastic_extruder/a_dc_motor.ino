@@ -63,7 +63,12 @@ void dc_set_target_rotation_way(rotation_way rotation_way){
 }
 
 /**
+ * Set the outputs of the
+*/
+
+/**
  * Update the actual speed of the motor until the target way and speed is achieved
+ * It have to be called as often as possible
 */
 void dc_update_current_speed(void){
     bool error = false;
@@ -73,24 +78,38 @@ void dc_update_current_speed(void){
     // Update the ramp and get the new value
     dc_ramp.update();
     ramp_speed = dc_ramp.getValue();
-
-    // If a change in direction was ongoing, reset the ramp
-    if (dc_ramp.isFinished() && dc_current_speed==0 && dc_target_speed != 0){
-        dc_ramp.go(dc_target_speed, DC_RAMP_DURATION);
-        dc_current_rotation_way = dc_target_rotation_way;
+    // Only update is there is an actual change in speed
+    if (ramp_speed != dc_current_speed) {
+        dc_current_speed = ramp_speed;
+        // Map the speed on 0-255 backward because of hardware implementation
+        mapped_speed = map(ramp_speed, 0, 100, 255, 0);
+        // If a change in direction was ongoing, reset the ramp at the 0 crossing.
+        if (dc_ramp.isFinished() && dc_current_speed==0 && dc_target_speed != 0){
+            // Set the ramp to go back to target speed
+            dc_ramp.go(dc_target_speed, DC_RAMP_DURATION);
+            dc_current_rotation_way = dc_target_rotation_way;
+            if (dc_current_rotation_way == FWD) {
+                digitalWrite(DC_PIN_BW, HIGH);
+                analogWrite(DC_PIN_FW, mapped_speed);
+            }
+            else if (dc_current_rotation_way == BWD){
+                digitalWrite(DC_PIN_FW, HIGH);
+                analogWrite(DC_PIN_BW, mapped_speed);
+            }
+            else {
+                error = true;
+            }
+        }
+        else {
+            if (dc_current_rotation_way == FWD) {
+                analogWrite(DC_PIN_FW, mapped_speed);
+            }
+            else if (dc_current_rotation_way == BWD){
+                analogWrite(DC_PIN_BW, mapped_speed);
+            }
+            else {
+                error = true;
+            }
+        }
     }
-    // Map the speed on 0-255 backward because of hardware implementation
-    mapped_speed = map(ramp_speed, 0, 100, 255, 0);
-    if (dc_current_rotation_way == FWD) {
-        digitalWrite(DC_PIN_BW, HIGH);
-        analogWrite(DC_PIN_FW, mapped_speed);
-    }
-    else if (dc_current_rotation_way == BWD){
-        digitalWrite(DC_PIN_FW, HIGH);
-        analogWrite(DC_PIN_BW, mapped_speed);
-    }
-    else {
-        error = true;
-    }
-    dc_current_speed = ramp_speed;
 }

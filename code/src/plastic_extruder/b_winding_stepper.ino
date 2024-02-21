@@ -70,6 +70,7 @@ void stepper_set_target_rotation_way(rotation_way rotation_way){
 
 /**
  * Update the actual speed of the stepper until the target way and speed is achieved
+ * It have to be called as often as possible
 */
 void stepper_update_current_speed(void){
     bool error = false;
@@ -82,7 +83,10 @@ void stepper_update_current_speed(void){
 
     // Map the speed on 0-255 backward because of hardware implementation
     mapped_speed = map(ramp_speed, -100, 100, -STEPPER_MAX_SPEED, STEPPER_MAX_SPEED);
+    // Update the current speed for later use
     stepper_current_speed = ramp_speed;
+    // Update the target speed for the stepper object
     winding_stepper.spin(mapped_speed);
+    // The loop method is the equivalent of this function for the stepper object, it actually physicaly changes the speed.
     winding_stepper.loop();
 }
